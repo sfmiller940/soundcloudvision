@@ -33,7 +33,19 @@
 		SC.resolve(document.getElementById('urlinput').value).then( function(sound){
 			console.log(sound);
 			if( sound.kind=='track'){ audio.src = sound.uri +'/stream?client_id=' + client_id; }
-			else if ( sound.kind=='playlist'){ audio.src = sound.tracks[0].uri + '/stream?client_id=' + client_id;}
+			else if ( sound.kind=='playlist'){ 
+			  document.getElementById('SCVplaylist').innerHTML = '';
+			  for(var i =0; i< sound.tracks.length;i++){
+				  var trackanchor = document.createElement('a');
+				  trackanchor.innerHTML = sound.tracks[i].title;
+				  trackanchor.setAttribute('href', sound.tracks[i].uri + '/stream?client_id=' + client_id);
+				  trackanchor.onclick = function(){
+					  audio.src = this.href;
+					  return false;
+				  };
+				  document.getElementById('SCVplaylist').appendChild(trackanchor);
+			  }
+			}
 		});
 	
 	}; 
@@ -42,21 +54,24 @@
 
 		// Add player elements to body
 		document.body.innerHTML += '' +
-			'<div id="SCV" style="position: fixed; top: 0; left: 0; height: 100%; width: 100%; background: #777;">' +
-				'<canvas id="analyser_render" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"></canvas>' +
-				'<div id="urlui" style="position: absolute; bottom: 60px; left: 0px; width: 100%; text-align: center;">' +
-						'<input type="text" id="urlinput" value="https://soundcloud.com/dj-vadim/inna-studio1-style" style="width: 60%; max-width: 400px; border: 1px #fff solid;" class="rb_light_bg" />' +
-						'<button id="load_bt" class="rb_light_bg" style="border: 1px #fff solid; margin-left: 0.5em;">load</button>'+
-				'</div>' + 
-				'<div id="scplayer" style="position: absolute; bottom: 10px; left: 0px; width: 100%; text-align: center;"></div>' +
+			'<div id="SCV">' +
+				'<canvas id="SCVisualizer"></canvas>' +
+				'<div id="SCVuiWrap"><div id="SCVui">' +
+					'<div id="SCVplaylist"></div>' +
+					'<div id="urlui">' +
+							'<input type="text" id="urlinput" value="https://soundcloud.com/dj-vadim/inna-studio1-style" class="rb_light_bg" />' +
+							'<button id="urlbutton" class="rb_light_bg">load</button>'+
+					'</div>' + 
+					'<div id="scplayer"></div>' +
+				'</div></div>' +
 		   '</div>';
 		document.getElementById('scplayer').appendChild(audio);
-		document.getElementById('load_bt').onclick = loadurl;
+		document.getElementById('urlbutton').onclick = loadurl;
 		document.getElementById("urlinput")
 			.addEventListener("keyup", function(event) {
 			event.preventDefault();
 			if (event.keyCode == 13) {
-				document.getElementById("load_bt").click();
+				document.getElementById("urlbutton").click();
 			}
 		});		// Setup analyser.
 		context = new AudioContext(); // AudioContext object instance
@@ -65,7 +80,7 @@
 		source.connect(analyser);
 		analyser.connect(context.destination);
 		// Setup canvas
-		canvas = document.getElementById('analyser_render');
+		canvas = document.getElementById('SCVisualizer');
 		ctx = canvas.getContext('2d');
 		// Run visualizer
 		frameLooper();
