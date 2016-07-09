@@ -7,7 +7,7 @@
 	audio.controls = true;
 	audio.loop = true;
 	audio.autoplay = true;
-	
+
 	// Init analyser variables
 	var canvas, ctx, source, context, analyser, fbc_array, bars, bar_x, bar_width, bar_height, RGB;
 	
@@ -18,14 +18,7 @@
 	});
 	
 	// Load track and player.
-	window.addEventListener("load", function(){
-			
-		SC.resolve("https://soundcloud.com/dj-vadim/inna-studio1-style").then( function(sound){
-			audio.src = sound.uri +'/stream?client_id=' + client_id;
-			initPlayer();
-		});
-		
-	}, false);
+	window.addEventListener("load", initPlayer, false);
 	
 	// Update audio src
 	var loadurl = function(){
@@ -33,7 +26,8 @@
 		SC.resolve(document.getElementById('urlinput').value).then( function(sound){
 			console.log(sound);
 			if( sound.kind=='track'){ audio.src = sound.uri +'/stream?client_id=' + client_id; }
-			else if ( sound.kind=='playlist'){ 
+			else if ( sound.kind=='playlist'){
+			  audio.src = sound.tracks[0].uri +'/stream?client_id=' + client_id;
 			  document.getElementById('SCVplaylist').innerHTML = '';
 			  for(var i =0; i< sound.tracks.length;i++){
 				  var trackanchor = document.createElement('a');
@@ -41,8 +35,12 @@
 				  trackanchor.setAttribute('href', sound.tracks[i].uri + '/stream?client_id=' + client_id);
 				  trackanchor.onclick = function(){
 					  audio.src = this.href;
+					  var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
+					  for(var i=0;i<tracks.length;i++){ tracks[i].className = ''; }
+					  this.className = "active";
 					  return false;
 				  };
+				  if( i == 0 ){ trackanchor.className = "active"; }
 				  document.getElementById('SCVplaylist').appendChild(trackanchor);
 			  }
 			}
@@ -59,7 +57,7 @@
 				'<div id="SCVuiWrap"><div id="SCVui">' +
 					'<div id="SCVplaylist"></div>' +
 					'<div id="urlui">' +
-							'<input type="text" id="urlinput" value="https://soundcloud.com/dj-vadim/inna-studio1-style" class="rb_light_bg" />' +
+							'<input type="text" id="urlinput" value="https://soundcloud.com/hanso1/sets/hanso-demos" class="rb_light_bg" />' +
 							'<button id="urlbutton" class="rb_light_bg">load</button>'+
 					'</div>' + 
 					'<div id="scplayer"></div>' +
@@ -71,9 +69,11 @@
 			.addEventListener("keyup", function(event) {
 			event.preventDefault();
 			if (event.keyCode == 13) {
-				document.getElementById("urlbutton").click();
+				loadurl();
 			}
-		});		// Setup analyser.
+		});
+		loadurl();
+		// Setup analyser.
 		context = new AudioContext(); // AudioContext object instance
 		analyser = context.createAnalyser(); // AnalyserNode method
 		source = context.createMediaElementSource(audio); 
@@ -99,7 +99,7 @@
 		bar_width = canvas.width / bars;
 		for (var i = 0; i < bars; i++) {
 			bar_x = i * bar_width ;
-			bar_height = -( canvas.height * fbc_array[i] / 255 );
+			bar_height = -( canvas.height *  fbc_array[i]  /  255  );
 			RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 100, 100 );
 			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
 			ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
@@ -149,5 +149,47 @@
 		
 		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 	}
+	
+	
+	function nexttrack (){
+		var currentindex, nextindex;
+		var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
+		for (i=0;i<tracks.length;i++){ 
+			if( audio.src == tracks[i].href ) { currentindex = i; break; }
+		}
+		if ( currentindex == tracks.length - 1 ){ nextindex = 0; }
+		else{ nextindex = currentindex+1; }
+		tracks[currentindex].className = '';
+		tracks[nextindex].className = 'active';
+		audio.src = tracks[nextindex].href;
+	}
+	
+	function prevtrack (){
+		var currentindex, previndex;
+		var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
+		for (i=0;i<tracks.length;i++){ 
+			if( audio.src == tracks[i].href ) { currentindex = i; break; }
+		}
+		if ( currentindex == 0 ){ previndex =  tracks.length - 1 ; }
+		else{ previndex = currentindex - 1; }
+		tracks[currentindex].className = '';
+		tracks[previndex].className = 'active';
+		audio.src = tracks[previndex].href;
+	}
+	
+	document.onkeydown = function(e) {
+		switch (e.keyCode) {
+			case 37:
+				prevtrack();
+				break;
+			case 39:
+				nexttrack();
+				break;
+		}
+	};	
+	
+	
+	//This doesn't work!!!
+	audio.addEventListener("ended", nexttrack);
 	
 }());
