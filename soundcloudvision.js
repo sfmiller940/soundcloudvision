@@ -5,7 +5,7 @@
 	var audio = new Audio();
 	audio.crossOrigin = "anonymous";
 	audio.controls = true;
-	audio.loop = true;
+	audio.loop = false;
 	audio.autoplay = true;
 
 	// Init analyser variables
@@ -154,7 +154,7 @@
 	function nexttrack (){
 		var currentindex, nextindex;
 		var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
-		for (i=0;i<tracks.length;i++){ 
+		for (var i=0;i<tracks.length;i++){ 
 			if( audio.src == tracks[i].href ) { currentindex = i; break; }
 		}
 		if ( currentindex == tracks.length - 1 ){ nextindex = 0; }
@@ -188,8 +188,6 @@
 		}
 	};	
 	
-	
-	//This doesn't work!!!
 	audio.addEventListener("ended", nexttrack);
 	
 }());
