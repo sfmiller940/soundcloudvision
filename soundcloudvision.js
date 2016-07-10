@@ -20,30 +20,35 @@
 	// Load track and player.
 	window.addEventListener("load", initPlayer, false);
 	
+	function addtrack(track){
+		  var trackanchor = document.createElement('a');
+		  trackanchor.innerHTML = track.title;
+		  trackanchor.setAttribute('href', track.uri + '/stream?client_id=' + client_id);
+		  trackanchor.onclick = function(){
+			  audio.src = this.href;
+			  var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
+			  for(var i=0;i<tracks.length;i++){ tracks[i].className = ''; }
+			  this.className = "active";
+			  return false;
+		  };
+		  document.getElementById('SCVplaylist').appendChild(trackanchor);		
+	}
+	
 	// Update audio src
 	var loadurl = function(){
 		console.log('called');
 		SC.resolve(document.getElementById('urlinput').value).then( function(sound){
 			console.log(sound);
-			if( sound.kind=='track'){ audio.src = sound.uri +'/stream?client_id=' + client_id; }
+	  		document.getElementById('SCVplaylist').innerHTML = '';
+			if( sound.kind=='track'){
+				audio.src = sound.uri +'/stream?client_id=' + client_id;
+				addtrack(sound);
+			}
 			else if ( sound.kind=='playlist'){
 			  audio.src = sound.tracks[0].uri +'/stream?client_id=' + client_id;
-			  document.getElementById('SCVplaylist').innerHTML = '';
-			  for(var i =0; i< sound.tracks.length;i++){
-				  var trackanchor = document.createElement('a');
-				  trackanchor.innerHTML = sound.tracks[i].title;
-				  trackanchor.setAttribute('href', sound.tracks[i].uri + '/stream?client_id=' + client_id);
-				  trackanchor.onclick = function(){
-					  audio.src = this.href;
-					  var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
-					  for(var i=0;i<tracks.length;i++){ tracks[i].className = ''; }
-					  this.className = "active";
-					  return false;
-				  };
-				  if( i == 0 ){ trackanchor.className = "active"; }
-				  document.getElementById('SCVplaylist').appendChild(trackanchor);
-			  }
+			  for(var i =0; i< sound.tracks.length;i++) { addtrack(sound.tracks[i]); }
 			}
+			document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
 		});
 	
 	}; 
@@ -72,6 +77,8 @@
 				loadurl();
 			}
 		});
+		document.getElementById('SCVplaylist').style.maxHeight= ( 0.7 * (window.innerHeight - document.getElementById('urlui').offsetHeight - document.getElementById('scplayer').offsetHeight ) )+'px';
+		window.onresize = function(){ document.getElementById('SCVplaylist').style.maxHeight= ( 0.7 * (window.innerHeight - document.getElementById('urlui').offsetHeight - document.getElementById('scplayer').offsetHeight ) )+'px'; };
 		loadurl();
 		// Setup analyser.
 		context = new AudioContext(); // AudioContext object instance
