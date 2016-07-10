@@ -60,15 +60,23 @@
   width: 100%;
   margin-bottom: 2%;
   float: left;
+  overflow: scroll;
 }
 #SCVplaylist a{
   display: inline-block;
+  text-align: left;
   float: left;
   clear: left;
   color: #fff;
   text-decoration: none;
   margin-bottom: 0.25em;
   opacity: 0.6;
+  transition: opacity .25s ease-in-out;
+  -moz-transition: opacity .25s ease-in-out;
+  -webkit-transition: opacity .25s ease-in-out;
+}
+#SCVplaylist a:hover{
+  opacity: 0.8;
 }
 #SCVplaylist a.active{
   opacity: 1;
