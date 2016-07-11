@@ -108,7 +108,7 @@
 		bar_width = canvas.width / bars;
 		for (var i = 0; i < bars; i++) {
 			bar_x = i * bar_width ;
-			bar_height = -( canvas.height *  fbc_array[i]  /  255  );
+			bar_height = -( canvas.height * Math.sqrt( fbc_array[i]  /  255 )  );
 			RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 1, 1 );
 			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
 			ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
@@ -118,7 +118,6 @@
 		}
 		currentloop = (currentloop+1) % 360;
 	}
-		
 	
 	function nexttrack (){
 		var currentindex, nextindex;
@@ -170,9 +169,7 @@
 	
 	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
 	function hsvToRgb(h, s, v) {
-	
 		h = h / 60;
-	
 		var i = Math.floor(h),
 			f = h - i,
 			p = v * (1 - s),
@@ -182,7 +179,6 @@
 			r = [v, q, p, p, t, v][mod],
 			g = [t, v, v, q, p, p][mod],
 			b = [p, p, t, v, v, q][mod];
-	
 		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 	}
 	
