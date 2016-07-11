@@ -1,100 +1,161 @@
 // SoundCloudVision
-"use strict";
 (function(){
-	// Configure Audio object.
-	var audio = new Audio();
-	audio.crossOrigin = "anonymous";
-	audio.controls = true;
-	audio.loop = false;
-	audio.autoplay = true;
+	"use strict";
 
-	// Init analyser variables
-	var canvas, ctx, source, context, analyser, fbc_array, bars, bar_x, bar_width, bar_height, RGB;
-	
-	// Initialize SC API
-	var client_id = 'db4e599756be1dbebe49a581186a9e61';
-	SC.initialize({
-		client_id: client_id,
-	});
-	
-	// Load track and player.
-	window.addEventListener("load", initPlayer, false);
-	
-	function addtrack(track){
-		  var trackanchor = document.createElement('a');
-		  trackanchor.innerHTML = track.title;
-		  trackanchor.setAttribute('href', track.uri + '/stream?client_id=' + client_id);
-		  trackanchor.onclick = function(){
-			  audio.src = this.href;
-			  var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
-			  for(var i=0;i<tracks.length;i++){ tracks[i].className = ''; }
-			  this.className = "active";
-			  return false;
-		  };
-		  document.getElementById('SCVplaylist').appendChild(trackanchor);		
-	}
-	
-	// Update audio src
-	var loadurl = function(){
-		SC.resolve(document.getElementById('urlinput').value)
-			.then( function(sound){
-				console.log(sound);
-				if(sound.kind == 'track' || ( sound.kind == 'playlist' && sound.tracks.length > 0)){
-					document.getElementById('SCVplaylist').innerHTML = '';
-					if( sound.kind=='track'){
-						audio.src = sound.uri +'/stream?client_id=' + client_id;
-						addtrack(sound);
-					}
-					else if ( sound.kind=='playlist' ){
-						audio.src = sound.tracks[0].uri +'/stream?client_id=' + client_id;
-						for(var i =0; i< sound.tracks.length;i++) { addtrack(sound.tracks[i]); }
-					}
-					document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
-				}
-				else{ alert('Sorry, SoundCloud doesn\'t share this.'); }
-			}).catch(function(error){ alert('Sorry, SoundCloud doesn\'t share this: ' + error.message); });
-	}; 
-	
-	function initPlayer(){
-
-		// Add player elements to body
-		document.body.innerHTML += '' +
-			'<div id="SCV">' +
-				'<canvas id="SCVisualizer"></canvas>' +
-				'<div id="SCVuiWrap"><div id="SCVui">' +
-					'<div id="SCVplaylist"></div>' +
-					'<div id="urlui">' +
-							'<input type="text" id="urlinput" value="https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg" />' +
-							'<button id="urlbutton" class="rb_light_bg">load</button>'+
-					'</div>' + 
-					'<div id="scplayer"></div>' +
-				'</div></div>' +
-		   '</div>';
-		document.getElementById('scplayer').appendChild(audio);
-		document.getElementById('urlbutton').onclick = loadurl;
-		document.getElementById("urlinput")
-			.addEventListener("keyup", function(event) {
-			event.preventDefault();
-			if (event.keyCode == 13) {
-				loadurl();
-			}
-		});
-		document.getElementById('SCVplaylist').style.maxHeight= ( 0.7 * (window.innerHeight - document.getElementById('urlui').offsetHeight - document.getElementById('scplayer').offsetHeight ) )+'px';
-		window.onresize = function(){ document.getElementById('SCVplaylist').style.maxHeight= ( 0.7 * (window.innerHeight - document.getElementById('urlui').offsetHeight - document.getElementById('scplayer').offsetHeight ) )+'px'; };
-		loadurl();
-		// Setup analyser.
+	// Audio player
+	var SCVplayer = new function() {
+		
+		// Audio setup		
+		var audio = new Audio;
+		audio.crossOrigin = "anonymous";
+		audio.controls = true;
+		audio.loop = false;
+		audio.autoplay = true;
 		context = new AudioContext(); // AudioContext object instance
-		analyser = context.createAnalyser(); // AnalyserNode method
+		this.analyser = context.createAnalyser(); // AnalyserNode method
 		source = context.createMediaElementSource(audio); 
-		source.connect(analyser);
-		analyser.connect(context.destination);
-		// Setup canvas
+		source.connect(this.analyser);
+		this.analyser.connect(context.destination);
+
+		// SC API	
+		var client_id = 'db4e599756be1dbebe49a581186a9e61';
+		SC.initialize({
+			client_id: client_id,
+		});
+
+		// Player elements and bindings
+		this.init = function(){
+
+			document.body.innerHTML += '' +
+				'<div id="SCV">' +
+					'<canvas id="SCVisualizer"></canvas>' +
+					'<div id="SCVuiWrap"><div id="SCVui">' +
+						'<div id="SCVplaylist"></div>' +
+						'<div id="urlui">' +
+								'<input type="text" id="urlinput" value="https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg" />' +
+								'<button id="urlbutton" class="rb_light_bg">load</button>'+
+						'</div>' + 
+						'<div id="scplayer"></div>' +
+					'</div></div>' +
+			   '</div>';
+			   
+			document.getElementById('scplayer').appendChild(audio);
+			audio.addEventListener("ended", nexttrack);
+
+			document.getElementById('urlbutton').onclick = loadurl;
+			document.getElementById("urlinput")
+				.addEventListener("keyup", function(event) {
+				event.preventDefault();
+				if (event.keyCode == 13) {
+					loadurl();
+				}
+			});
+						
+			document.onkeydown = function(e) {
+				switch (e.keyCode) {
+					case 37: //left
+						prevtrack();
+						break;
+					case 39: //right
+						nexttrack();
+						break;
+					case 38: //up
+						prevtrack();
+						break;
+					case 40: //down
+						nexttrack();
+						break;
+					case 32: // spacebar
+						if(audio.paused){ audio.play(); }else{ audio.pause(); }
+						break;
+				}
+			};	
+								
+
+			var resizeplaylist = function() { document.getElementById('SCVplaylist').style.maxHeight= ( 0.7 * (window.innerHeight - document.getElementById('urlui').offsetHeight - document.getElementById('scplayer').offsetHeight ) )+'px'; };
+			window.onresize = resizeplaylist;
+			resizeplaylist();
+
+			// Load song or playlist
+			loadurl();
+			
+		};
+		
+		// Resolve URL and update playlist.
+		function loadurl(){
+			SC.resolve(document.getElementById('urlinput').value)
+				.then( function(sound){
+					console.log(sound);
+					if(sound.kind == 'track' || ( sound.kind == 'playlist' && sound.tracks.length > 0)){
+						document.getElementById('SCVplaylist').innerHTML = '';
+						if( sound.kind=='track'){
+							audio.src = sound.uri +'/stream?client_id=' + client_id;
+							addtrack(sound);
+						}
+						else if ( sound.kind=='playlist' ){
+							audio.src = sound.tracks[0].uri +'/stream?client_id=' + client_id;
+							for(var i =0; i< sound.tracks.length;i++) { addtrack(sound.tracks[i]); }
+						}
+						document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
+					}
+					else{ alert('Sorry, SoundCloud doesn\'t share this.'); }
+				}).catch(function(error){ alert('Sorry, SoundCloud doesn\'t share this: ' + error.message); });
+		}; 
+			
+		function addtrack(track){
+			  var trackanchor = document.createElement('a');
+			  trackanchor.innerHTML = track.title;
+			  trackanchor.setAttribute('href', track.uri + '/stream?client_id=' + client_id);
+			  trackanchor.onclick = function(){
+				  audio.src = this.href;
+				  var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
+				  for(var i=0;i<tracks.length;i++){ tracks[i].className = ''; }
+				  this.className = "active";
+				  return false;
+			  };
+			  document.getElementById('SCVplaylist').appendChild(trackanchor);		
+		}
+				
+		function nexttrack (){
+			var currentindex, nextindex;
+			var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
+			for (var i=0;i<tracks.length;i++){ 
+				if( audio.src == tracks[i].href ) { currentindex = i; break; }
+			}
+			if ( currentindex == tracks.length - 1 ){ nextindex = 0; }
+			else{ nextindex = currentindex+1; }
+			tracks[currentindex].className = '';
+			tracks[nextindex].className = 'active';
+			audio.src = tracks[nextindex].href;
+		}
+		
+		function prevtrack (){
+			var currentindex, previndex;
+			var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
+			for (var i=0;i<tracks.length;i++){ 
+				if( audio.src == tracks[i].href ) { currentindex = i; break; }
+			}
+			if ( currentindex == 0 ){ previndex =  tracks.length - 1 ; }
+			else{ previndex = currentindex - 1; }
+			tracks[currentindex].className = '';
+			tracks[previndex].className = 'active';
+			audio.src = tracks[previndex].href;
+		}
+				
+	};
+		
+	// Init analyser variables
+	var canvas, ctx, source, context, analyser, fbc_array, bars, bar_x, bar_width, bar_height, RGB;	
+
+	// Load track and player.
+	window.addEventListener("load", function(){
+		SCVplayer.init();
 		canvas = document.getElementById('SCVisualizer');
 		ctx = canvas.getContext('2d');
 		// Run visualizer
 		frameLooper();
-	}
-		
+	}, false);
+	
 	// Visualization function
 	var currentloop = 0;
 	function frameLooper(){
@@ -102,9 +163,9 @@
 		ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 	
 		// Display frequency data
-		fbc_array = new Uint8Array(analyser.frequencyBinCount);
-		analyser.getByteFrequencyData(fbc_array);
-		bars =  2 * analyser.frequencyBinCount / 3 ;
+		fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
+		SCVplayer.analyser.getByteFrequencyData(fbc_array);
+		bars =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
 		bar_width = canvas.width / bars;
 		for (var i = 0; i < bars; i++) {
 			bar_x = i * bar_width ;
@@ -118,54 +179,6 @@
 		}
 		currentloop = (currentloop+1) % 360;
 	}
-	
-	function nexttrack (){
-		var currentindex, nextindex;
-		var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
-		for (var i=0;i<tracks.length;i++){ 
-			if( audio.src == tracks[i].href ) { currentindex = i; break; }
-		}
-		if ( currentindex == tracks.length - 1 ){ nextindex = 0; }
-		else{ nextindex = currentindex+1; }
-		tracks[currentindex].className = '';
-		tracks[nextindex].className = 'active';
-		audio.src = tracks[nextindex].href;
-	}
-	
-	function prevtrack (){
-		var currentindex, previndex;
-		var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
-		for (var i=0;i<tracks.length;i++){ 
-			if( audio.src == tracks[i].href ) { currentindex = i; break; }
-		}
-		if ( currentindex == 0 ){ previndex =  tracks.length - 1 ; }
-		else{ previndex = currentindex - 1; }
-		tracks[currentindex].className = '';
-		tracks[previndex].className = 'active';
-		audio.src = tracks[previndex].href;
-	}
-	
-	document.onkeydown = function(e) {
-		switch (e.keyCode) {
-			case 37: //left
-				prevtrack();
-				break;
-			case 39: //right
-				nexttrack();
-				break;
-			case 38: //up
-				prevtrack();
-				break;
-			case 40: //down
-				nexttrack();
-				break;
-			case 32: // spacebar
-				if(audio.paused){ audio.play(); }else{ audio.pause(); }
-				break;
-		}
-	};	
-	
-	audio.addEventListener("ended", nexttrack);
 	
 	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
 	function hsvToRgb(h, s, v) {
