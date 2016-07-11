@@ -109,56 +109,16 @@
 		for (var i = 0; i < bars; i++) {
 			bar_x = i * bar_width ;
 			bar_height = -( canvas.height *  fbc_array[i]  /  255  );
-			RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 100, 100 );
+			RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 1, 1 );
 			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
 			ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
-			RGB = hsvToRgb( ( (i * 360 / bars) + 180 + currentloop) % 360, 100, 100 );
+			RGB = hsvToRgb( ( (i * 360 / bars) + 180 + currentloop) % 360, 1, 1 );
 			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
 			ctx.fillRect(bar_x, 0, bar_width, canvas.height + bar_height);
 		}
 		currentloop = (currentloop+1) % 360;
 	}
-	
-	
-	/**
-	 * HSV to RGB color conversion - Ported from the excellent java algorithm by Eugene Vishnevsky at:  http://www.cs.rit.edu/~ncs/color/t_convert.html
-	*/
-	 
-	function hsvToRgb(h, s, v) {
-		var r, g, b;
-		var i;
-		var f, p, q, t;
 		
-		// Make sure our arguments stay in-range
-		h = Math.max(0, Math.min(360, h));
-		s = Math.max(0, Math.min(100, s)) / 100;
-		v = Math.max(0, Math.min(100, v)) / 100;
-			
-		if(s == 0) {
-			// Achromatic (grey)
-			r = g = b = v;
-			return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-		}
-		
-		h /= 60; // sector 0 to 5
-		i = Math.floor(h);
-		f = h - i; // factorial part of h
-		p = v * (1 - s);
-		q = v * (1 - s * f);
-		t = v * (1 - s * (1 - f));
-	
-		switch(i) {
-			case 0: r = v, g = t, b = p; break;
-			case 1: r = q, g = v, b = p; break;
-			case 2: r = p, g = v, b = t; break;
-			case 3: r = p, g = q, b = v; break;
-			case 4: r = t, g = p, b = v; break;
-			default: r = v, g = p, b = q;
-		}
-		
-		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-	}
-	
 	
 	function nexttrack (){
 		var currentindex, nextindex;
@@ -188,15 +148,42 @@
 	
 	document.onkeydown = function(e) {
 		switch (e.keyCode) {
-			case 37:
+			case 37: //left
 				prevtrack();
 				break;
-			case 39:
+			case 39: //right
 				nexttrack();
+				break;
+			case 38: //up
+				prevtrack();
+				break;
+			case 40: //down
+				nexttrack();
+				break;
+			case 32: // spacebar
+				if(audio.paused){ audio.play(); }else{ audio.pause(); }
 				break;
 		}
 	};	
 	
 	audio.addEventListener("ended", nexttrack);
+	
+	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
+	function hsvToRgb(h, s, v) {
+	
+		h = h / 60;
+	
+		var i = Math.floor(h),
+			f = h - i,
+			p = v * (1 - s),
+			q = v * (1 - f * s),
+			t = v * (1 - (1 - f) * s),
+			mod = i % 6,
+			r = [v, q, p, p, t, v][mod],
+			g = [t, v, v, q, p, p][mod],
+			b = [p, p, t, v, v, q][mod];
+	
+		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+	}
 	
 }());
