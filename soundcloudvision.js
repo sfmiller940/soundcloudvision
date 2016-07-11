@@ -11,6 +11,7 @@
 		audio.controls = true;
 		audio.loop = false;
 		audio.autoplay = true;
+		audio.addEventListener("ended", nexttrack);
 		context = new AudioContext(); // AudioContext object instance
 		this.analyser = context.createAnalyser(); // AnalyserNode method
 		source = context.createMediaElementSource(audio); 
@@ -37,10 +38,9 @@
 						'</div>' + 
 						'<div id="scplayer"></div>' +
 					'</div></div>' +
-			   '</div>';
+				'</div>';
 			   
 			document.getElementById('scplayer').appendChild(audio);
-			audio.addEventListener("ended", nexttrack);
 
 			document.getElementById('urlbutton').onclick = loadurl;
 			document.getElementById("urlinput")
