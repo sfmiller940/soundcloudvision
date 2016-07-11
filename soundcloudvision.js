@@ -36,21 +36,23 @@
 	
 	// Update audio src
 	var loadurl = function(){
-		console.log('called');
-		SC.resolve(document.getElementById('urlinput').value).then( function(sound){
-			console.log(sound);
-	  		document.getElementById('SCVplaylist').innerHTML = '';
-			if( sound.kind=='track'){
-				audio.src = sound.uri +'/stream?client_id=' + client_id;
-				addtrack(sound);
-			}
-			else if ( sound.kind=='playlist'){
-			  audio.src = sound.tracks[0].uri +'/stream?client_id=' + client_id;
-			  for(var i =0; i< sound.tracks.length;i++) { addtrack(sound.tracks[i]); }
-			}
-			document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
-		});
-	
+		SC.resolve(document.getElementById('urlinput').value)
+			.then( function(sound){
+				console.log(sound);
+				if(sound.kind == 'track' || ( sound.kind == 'playlist' && sound.tracks.length > 0)){
+					document.getElementById('SCVplaylist').innerHTML = '';
+					if( sound.kind=='track'){
+						audio.src = sound.uri +'/stream?client_id=' + client_id;
+						addtrack(sound);
+					}
+					else if ( sound.kind=='playlist' ){
+						audio.src = sound.tracks[0].uri +'/stream?client_id=' + client_id;
+						for(var i =0; i< sound.tracks.length;i++) { addtrack(sound.tracks[i]); }
+					}
+					document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
+				}
+				else{ alert('Sorry, SoundCloud doesn\'t share this.'); }
+			}).catch(function(error){ alert('Sorry, SoundCloud doesn\'t share this: ' + error.message); });
 	}; 
 	
 	function initPlayer(){
@@ -62,7 +64,7 @@
 				'<div id="SCVuiWrap"><div id="SCVui">' +
 					'<div id="SCVplaylist"></div>' +
 					'<div id="urlui">' +
-							'<input type="text" id="urlinput" value="https://soundcloud.com/hanso1/sets/hanso-demos" class="rb_light_bg" />' +
+							'<input type="text" id="urlinput" value="https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg" />' +
 							'<button id="urlbutton" class="rb_light_bg">load</button>'+
 					'</div>' + 
 					'<div id="scplayer"></div>' +
@@ -174,7 +176,7 @@
 	function prevtrack (){
 		var currentindex, previndex;
 		var tracks = document.getElementById('SCVplaylist').getElementsByTagName('a');
-		for (i=0;i<tracks.length;i++){ 
+		for (var i=0;i<tracks.length;i++){ 
 			if( audio.src == tracks[i].href ) { currentindex = i; break; }
 		}
 		if ( currentindex == 0 ){ previndex =  tracks.length - 1 ; }
