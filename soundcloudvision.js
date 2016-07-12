@@ -200,11 +200,8 @@
 	}, false);
 	
 	
-	
-	
-	
-	
-	/*var SCVthree = new function(){
+	/*
+	function SCVthree(){
 		// Setup scene
 		var scene = new THREE.Scene();
 		
@@ -227,7 +224,7 @@
 	
 		//Setup camera
 		var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 10000 );
-		camera.position.z = 1500;
+		camera.position.z = 500;
 		
 		// Camera controls
 		var controls = new THREE.TrackballControls( camera );
@@ -239,31 +236,30 @@
 		controls.staticMoving = true;
 		controls.dynamicDampingFactor = 0.3;
 		controls.keys = [ 65, 83, 68 ];
-		controls.addEventListener( 'change', render );
+		//controls.addEventListener( 'change', loop );
 	
 		//Setup renderer
-		var renderer = new THREE.WebGLRenderer();
+		var renderer = new THREE.WebGLRenderer({ canvas : document.getElementById('SCVisualizer') });
 		renderer.setSize( window.innerWidth, window.innerHeight );
-		document.body.appendChild( renderer.domElement );
+		//document.body.appendChild( renderer.domElement );
 		
 		// Add objects to scene
 		var curves = [];
-		for (var i=0; i < SCVplayer.analyser.frequencyBinCount; i++){
-			var geometry = new THREE.CylinderGeometry( i * 5, i * 5, 20, 32 );
-			var material = new THREE.MeshLambertMaterial({color:0xcccccc});
+		for (var i=1; i < 10; i++){
+			var geometry = new THREE.CylinderGeometry( i * 20, i * 20, 20, 32,true );
+			var material = new THREE.MeshBasicMaterial({color:0xcccccc});
 			curves.push( new THREE.Mesh( geometry, material ) );
 			scene.add( curves[ curves.length - 1 ] );
 		}
 		
 		// Animate
 		var count = 0;
-		var render = function () {
-			requestAnimationFrame( render );
+		function loop () {
 			count = (count+1)%600;
 			ambientLight.color.setHSL( count / 600, 1, 0.5 );
-	
+		
 			for( var i =0; i < curves.length; i++){	
-				//curves[i].material.color.setHSL( ( ( i / curves.length) + (count/600) ) % 1,1,0.5);
+				curves[i].material.color.setHSL( ( ( i / curves.length) + (count/600) ) % 1,1,0.5);
 				//if (document.getElementById('rotate').checked) {
 					curves[i].rotation.x += 0.005;
 					curves[i].rotation.y += 0.005;
@@ -272,8 +268,9 @@
 			
 			renderer.render(scene, camera);
 			controls.update();
-		};
-		render();
+			requestAnimationFrame( loop );
+		}
+		loop();
 		
 		// Setup resize
 		window.addEventListener( 'resize', function () {
@@ -281,8 +278,8 @@
 			camera.updateProjectionMatrix();
 			renderer.setSize( window.innerWidth, window.innerHeight );
 		}, false );
-	};*/
-	
+	};
+	*/
 	
 	
 }());
