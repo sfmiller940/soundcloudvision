@@ -12,9 +12,9 @@
 		audio.loop = false;
 		audio.autoplay = true;
 		audio.addEventListener("ended", nexttrack);
-		context = new AudioContext(); // AudioContext object instance
+		var context = new AudioContext(); // AudioContext object instance
 		this.analyser = context.createAnalyser(); // AnalyserNode method
-		source = context.createMediaElementSource(audio); 
+		var source = context.createMediaElementSource(audio); 
 		source.connect(this.analyser);
 		this.analyser.connect(context.destination);
 
@@ -143,56 +143,146 @@
 		}
 				
 	};
+	
+	
+	function SCVrainbow(){
 		
-	// Init analyser variables
-	var canvas, ctx, source, context, analyser, fbc_array, bars, bar_x, bar_width, bar_height, RGB;	
+		var canvas, ctx, currentloop, fbc_array, bars, bar_x, bar_width, bar_height, RGB;	
+		canvas = document.getElementById('SCVisualizer');
+		ctx = canvas.getContext('2d');
+		currentloop = 0;
+		loop();
+		
+		function loop(){
+			window.requestAnimationFrame(loop);
+			ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+		
+			// Display frequency data
+			fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
+			SCVplayer.analyser.getByteFrequencyData(fbc_array);
+			bars =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
+			bar_width = canvas.width / bars;
+			for (var i = 0; i < bars; i++) {
+				bar_x = i * bar_width ;
+				bar_height = -( canvas.height * fbc_array[i]  /  255  );
+				RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 1, 1 );
+				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+				ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
+				RGB = hsvToRgb( ( (i * 360 / bars) + 180 + currentloop) % 360, 1, 1 );
+				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+				ctx.fillRect(bar_x, 0, bar_width, canvas.height + bar_height);
+			}
+			currentloop = (currentloop+1) % 360;
+			
+		};
+		
+		/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
+		function hsvToRgb(h, s, v) {
+			h = h / 60;
+			var i = Math.floor(h),
+				f = h - i,
+				p = v * (1 - s),
+				q = v * (1 - f * s),
+				t = v * (1 - (1 - f) * s),
+				mod = i % 6,
+				r = [v, q, p, p, t, v][mod],
+				g = [t, v, v, q, p, p][mod],
+				b = [p, p, t, v, v, q][mod];
+			return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+		}
 
+	};
+	
 	// Load track and player.
 	window.addEventListener("load", function(){
 		SCVplayer.init();
-		canvas = document.getElementById('SCVisualizer');
-		ctx = canvas.getContext('2d');
-		// Run visualizer
-		frameLooper();
+		SCVrainbow();
 	}, false);
 	
-	// Visualization function
-	var currentloop = 0;
-	function frameLooper(){
-		window.requestAnimationFrame(frameLooper);
-		ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 	
-		// Display frequency data
-		fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
-		SCVplayer.analyser.getByteFrequencyData(fbc_array);
-		bars =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
-		bar_width = canvas.width / bars;
-		for (var i = 0; i < bars; i++) {
-			bar_x = i * bar_width ;
-			bar_height = -( canvas.height * Math.sqrt( fbc_array[i]  /  255 )  );
-			RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 1, 1 );
-			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
-			ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
-			RGB = hsvToRgb( ( (i * 360 / bars) + 180 + currentloop) % 360, 1, 1 );
-			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
-			ctx.fillRect(bar_x, 0, bar_width, canvas.height + bar_height);
+	
+	
+	
+	
+	/*var SCVthree = new function(){
+		// Setup scene
+		var scene = new THREE.Scene();
+		
+		// Scene lights
+		var ambientLight = new THREE.AmbientLight( 0xffffff );
+		scene.add( ambientLight );
+	
+		var lights = [];
+		lights[0] = new THREE.PointLight( 0xffffff, 1, 0 );
+		lights[1] = new THREE.PointLight( 0xffffff, 1, 0 );
+		lights[2] = new THREE.PointLight( 0xffffff, 1, 0 );
+	
+		lights[0].position.set( 0, 2000, 0 );
+		lights[1].position.set( 1000, 2000, 1000 );
+		lights[2].position.set( -1000, -2000, -1000 );
+	
+		scene.add( lights[0] );
+		scene.add( lights[1] );
+		scene.add( lights[2] );
+	
+		//Setup camera
+		var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 10000 );
+		camera.position.z = 1500;
+		
+		// Camera controls
+		var controls = new THREE.TrackballControls( camera );
+		controls.rotateSpeed = 1.0;
+		controls.zoomSpeed = 1.2;
+		controls.panSpeed = 0.8;
+		controls.noZoom = false;
+		controls.noPan = false;
+		controls.staticMoving = true;
+		controls.dynamicDampingFactor = 0.3;
+		controls.keys = [ 65, 83, 68 ];
+		controls.addEventListener( 'change', render );
+	
+		//Setup renderer
+		var renderer = new THREE.WebGLRenderer();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		document.body.appendChild( renderer.domElement );
+		
+		// Add objects to scene
+		var curves = [];
+		for (var i=0; i < SCVplayer.analyser.frequencyBinCount; i++){
+			var geometry = new THREE.CylinderGeometry( i * 5, i * 5, 20, 32 );
+			var material = new THREE.MeshLambertMaterial({color:0xcccccc});
+			curves.push( new THREE.Mesh( geometry, material ) );
+			scene.add( curves[ curves.length - 1 ] );
 		}
-		currentloop = (currentloop+1) % 360;
-	}
+		
+		// Animate
+		var count = 0;
+		var render = function () {
+			requestAnimationFrame( render );
+			count = (count+1)%600;
+			ambientLight.color.setHSL( count / 600, 1, 0.5 );
 	
-	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
-	function hsvToRgb(h, s, v) {
-		h = h / 60;
-		var i = Math.floor(h),
-			f = h - i,
-			p = v * (1 - s),
-			q = v * (1 - f * s),
-			t = v * (1 - (1 - f) * s),
-			mod = i % 6,
-			r = [v, q, p, p, t, v][mod],
-			g = [t, v, v, q, p, p][mod],
-			b = [p, p, t, v, v, q][mod];
-		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-	}
+			for( var i =0; i < curves.length; i++){	
+				//curves[i].material.color.setHSL( ( ( i / curves.length) + (count/600) ) % 1,1,0.5);
+				//if (document.getElementById('rotate').checked) {
+					curves[i].rotation.x += 0.005;
+					curves[i].rotation.y += 0.005;
+				//}
+			}
+			
+			renderer.render(scene, camera);
+			controls.update();
+		};
+		render();
+		
+		// Setup resize
+		window.addEventListener( 'resize', function () {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+		}, false );
+	};*/
+	
+	
 	
 }());
