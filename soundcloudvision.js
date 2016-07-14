@@ -66,7 +66,7 @@
 						nexttrack();
 						break;
 					case 32: // spacebar
-						if(audio.paused){ audio.play(); }else{ audio.pause(); }
+						(audio.paused ? audio.play() : audio.pause() );
 						break;
 				}
 			};	
@@ -145,7 +145,8 @@
 			tracks[previndex].className = 'active';
 			audio.src = tracks[previndex].href;
 		}
-				
+		
+		// Via http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript		
 		function getQueryVariable(variable){
 			   var query = window.location.search.substring(1);
 			   var vars = query.split("&");
