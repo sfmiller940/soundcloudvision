@@ -100,7 +100,7 @@
 					}
 					else{ alert('Sorry, SoundCloud doesn\'t share this.'); }
 				}).catch(function(error){ alert('Sorry, SoundCloud doesn\'t share this: ' + error.message); });
-		}; 
+		}
 			
 		function addtrack(track){
 			  var trackanchor = document.createElement('a');
