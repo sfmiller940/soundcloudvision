@@ -86,7 +86,7 @@
 			SC.resolve(document.getElementById('urlinput').value)
 				.then( function(sound){
 					console.log(sound);
-					if(sound.kind == 'track' || ( sound.kind == 'playlist' && sound.tracks.length > 0)){
+					if(sound.kind == 'track' || ( sound.kind == 'playlist' && sound.tracks.length > 0) || sound[0].kind=='track'){
 						document.getElementById('SCVplaylist').innerHTML = '';
 						if( sound.kind=='track'){
 							audio.src = sound.uri +'/stream?client_id=' + client_id;
@@ -96,11 +96,15 @@
 							audio.src = sound.tracks[0].uri +'/stream?client_id=' + client_id;
 							for(var i =0; i< sound.tracks.length;i++) { addtrack(sound.tracks[i]); }
 						}
+						else if ( sound[0].kind=='track' ){
+							audio.src = sound[0].uri +'/stream?client_id=' + client_id;
+							for(var i =0; i< sound.length;i++) { addtrack(sound[i]); }
+						}
 						document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
 					}
 					else{ alert('Sorry, SoundCloud doesn\'t share this.'); }
 				}).catch(function(error){ alert('Sorry, SoundCloud doesn\'t share this: ' + error.message); });
-		}
+		} 
 			
 		function addtrack(track){
 			  var trackanchor = document.createElement('a');
