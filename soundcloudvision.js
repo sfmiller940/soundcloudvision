@@ -33,7 +33,7 @@
 					'<div id="SCVuiWrap"><div id="SCVui">' +
 						'<div id="SCVplaylist"></div>' +
 						'<div id="urlui">' +
-								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') ? getQueryVariable('playlist') : 'https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg') + '" />' +
+								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') || 'https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg') + '" />' +
 								'<button id="urlbutton" class="rb_light_bg">load</button>'+
 						'</div>' + 
 						'<div id="scplayer"></div>' +
