@@ -33,7 +33,7 @@
 					'<div id="SCVuiWrap"><div id="SCVui">' +
 						'<div id="SCVplaylist"></div>' +
 						'<div id="urlui">' +
-								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') || 'https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg') + '" />' +
+								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') ? unescape(getQueryVariable('playlist')) : 'https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg') + '" />' +
 								'<button id="urlbutton" class="rb_light_bg">load</button>'+
 						'</div>' + 
 						'<div id="audioviz">' +
@@ -209,6 +209,7 @@
 		ctx = canvas.getContext('2d');
 		currentloop = 0;
 		loop();
+		console.log( canvas.height + ' ' + canvas.width);
 		
 		function loop(){
 			if(activeviz == SCVcircles){
@@ -230,10 +231,10 @@
 				ycenter = canvas.height/2;
 				for (var i = 0; i < circles; i++) { totfreq += fbc_array[i*2]; }
 				for (var i = 0; i < circles; i++) {
+					ctx.beginPath();
 					delta = maxradius * fbc_array[i*2] / totfreq;
 					ctx.lineWidth = delta;
 					totradius += delta/2;
-					ctx.beginPath();
 					RGB = hsvToRgb( ((((i * 360 / circles) - (currentloop/3)) % 360)+360)%360, 1, 1 );
 					ctx.strokeStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
 					ctx.arc(xcenter,ycenter,totradius,0,2*Math.PI);
