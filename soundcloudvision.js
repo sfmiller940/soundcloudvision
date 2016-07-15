@@ -185,14 +185,14 @@
 				for (var i = 0; i < bars; i++) {
 					bar_x = i * bar_width ;
 					bar_height = -( canvas.height * fbc_array[i]  /  255  );
-					RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 1, 1 );
+					RGB = hsvToRgb( ((((i * 360 / bars) - (currentloop/3)) % 360)+360)%360, 1, 1 );
 					ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
 					ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
-					RGB = hsvToRgb( ( (i * 360 / bars) + 180 + currentloop) % 360, 1, 1 );
+					RGB = hsvToRgb( ((( (i * 360 / bars) + 180 - (currentloop/3)) % 360)+360)%360, 1, 1 );
 					ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
 					ctx.fillRect(bar_x, 0, bar_width, canvas.height + bar_height);
 				}
-				currentloop = (currentloop+1) % 360;
+				currentloop = (currentloop+1) % 1080;
 			}
 			
 		};
