@@ -36,7 +36,9 @@
 								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') || 'https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg') + '" />' +
 								'<button id="urlbutton" class="rb_light_bg">load</button>'+
 						'</div>' + 
-						'<div id="scplayer"></div>' +
+						'<div id="audioviz">' +
+							'<div id="scplayer"></div>' +
+							'<div id="viz"><select name="selectviz" id="selectviz" ><option value="SCVcircles()">Circles</option><option value="SCVwaves()">Waves</option></select></div>' +
 					'</div></div>' +
 				'</div>';
 			   
@@ -50,6 +52,7 @@
 					loadurl();
 				}
 			});
+			document.getElementById('selectviz').onchange = function(){ eval(this.value); };
 						
 			document.onkeydown = function(e) {
 				switch (e.keyCode) {
@@ -71,7 +74,6 @@
 				}
 			};	
 								
-
 			var resizeplaylist = function() { document.getElementById('SCVplaylist').style.maxHeight= ( 0.7 * (window.innerHeight - document.getElementById('urlui').offsetHeight - document.getElementById('scplayer').offsetHeight ) )+'px'; };
 			window.onresize = resizeplaylist;
 			resizeplaylist();
@@ -160,7 +162,9 @@
 	};
 	
 	
-	function SCVrainbow(){
+	function SCVwaves(){
+		
+		activeviz = SCVwaves;
 		
 		var canvas, ctx, currentloop, fbc_array, bars, bar_x, bar_width, bar_height, RGB;	
 		canvas = document.getElementById('SCVisualizer');
@@ -169,25 +173,27 @@
 		loop();
 		
 		function loop(){
-			window.requestAnimationFrame(loop);
-			ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-		
-			// Display frequency data
-			fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
-			SCVplayer.analyser.getByteFrequencyData(fbc_array);
-			bars =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
-			bar_width = canvas.width / bars;
-			for (var i = 0; i < bars; i++) {
-				bar_x = i * bar_width ;
-				bar_height = -( canvas.height * fbc_array[i]  /  255  );
-				RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 1, 1 );
-				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
-				ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
-				RGB = hsvToRgb( ( (i * 360 / bars) + 180 + currentloop) % 360, 1, 1 );
-				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
-				ctx.fillRect(bar_x, 0, bar_width, canvas.height + bar_height);
+			if(activeviz == SCVwaves){
+				window.requestAnimationFrame(loop);
+				ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+			
+				// Display frequency data
+				fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
+				SCVplayer.analyser.getByteFrequencyData(fbc_array);
+				bars =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
+				bar_width = canvas.width / bars;
+				for (var i = 0; i < bars; i++) {
+					bar_x = i * bar_width ;
+					bar_height = -( canvas.height * fbc_array[i]  /  255  );
+					RGB = hsvToRgb( ((i * 360 / bars) + currentloop) % 360, 1, 1 );
+					ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+					ctx.fillRect(bar_x, canvas.height, bar_width, bar_height);
+					RGB = hsvToRgb( ( (i * 360 / bars) + 180 + currentloop) % 360, 1, 1 );
+					ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+					ctx.fillRect(bar_x, 0, bar_width, canvas.height + bar_height);
+				}
+				currentloop = (currentloop+1) % 360;
 			}
-			currentloop = (currentloop+1) % 360;
 			
 		};
 		
@@ -196,54 +202,59 @@
 	
 	function SCVcircles(){
 		
-		var canvas, ctx, currentloop, fbc_array, RGB, circles, maxradius, totradius, radius, totfreq, xcenter, ycenter;	
+		activeviz = SCVcircles;
+		
+		var canvas, ctx, currentloop, fbc_array, RGB, circles, maxradius, totradius, delta, totfreq, xcenter, ycenter;	
 		canvas = document.getElementById('SCVisualizer');
 		ctx = canvas.getContext('2d');
 		currentloop = 0;
 		loop();
 		
 		function loop(){
-			window.requestAnimationFrame(loop);
-			ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-			RGB = hsvToRgb( currentloop % 360, 1, 1 );
-			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
-			ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas
-
-		
-			// Display frequency data
-			fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
-			SCVplayer.analyser.getByteFrequencyData(fbc_array);
-			circles =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
-			maxradius = Math.max(canvas.width, canvas.height) / 2;
-			totfreq = 0;
-			totradius = 0;
-			xcenter = canvas.width/2;
-			ycenter = canvas.height/2;
-			ctx.lineWidth = maxradius / circles;
-			for (var i = 0; i < circles; i++) { totfreq += fbc_array[i]; }
-			for (var i = 0; i < circles; i++) {
-				radius = maxradius * fbc_array[i] / totfreq;
-				totradius += radius;
-				ctx.beginPath();
-				RGB = hsvToRgb( ((i * 360 / circles) + currentloop) % 360, 1, 1 );
-				ctx.strokeStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
-				ctx.arc(xcenter,ycenter,totradius,0,2*Math.PI);
-				ctx.stroke();				
-				
-			}
-			currentloop = (currentloop+1) % 360;
+			if(activeviz == SCVcircles){
+				window.requestAnimationFrame(loop);
+				ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+				RGB = hsvToRgb( (((currentloop / -3) % 360)+360)%360, 1, 1 );
+				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+				ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas
+	
 			
-		};
+				// Display frequency data
+				fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
+				SCVplayer.analyser.getByteFrequencyData(fbc_array);
+				circles =   SCVplayer.analyser.frequencyBinCount / 2 ;
+				maxradius = Math.max( canvas.width, canvas.height) / 2;
+				totfreq = 0;
+				totradius = 0;
+				xcenter = canvas.width/2;
+				ycenter = canvas.height/2;
+				for (var i = 0; i < circles; i++) { totfreq += fbc_array[i*2]; }
+				for (var i = 0; i < circles; i++) {
+					delta = maxradius * fbc_array[i*2] / totfreq;
+					ctx.lineWidth = delta;
+					totradius += delta/2;
+					ctx.beginPath();
+					RGB = hsvToRgb( ((((i * 360 / circles) - (currentloop/3)) % 360)+360)%360, 1, 1 );
+					ctx.strokeStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+					ctx.arc(xcenter,ycenter,totradius,0,2*Math.PI);
+					ctx.stroke();				
+					totradius += delta/2;
+					
+				}
+				currentloop = (currentloop+1)%1080;// % 360;
+			}
+			
+		}
 		
 	};
 	
 	
-	
+	var activeviz;
 	// Load track and player.
 	window.addEventListener("load", function(){
 		SCVplayer.init();
-		var activeplayer = SCVcircles;
-		activeplayer();
+		activeviz = SCVcircles;
+		activeviz();
 	}, false);
 	
 	
