@@ -223,7 +223,7 @@
 				// Display frequency data
 				fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
 				SCVplayer.analyser.getByteFrequencyData(fbc_array);
-				circles =   SCVplayer.analyser.frequencyBinCount / 2 ;
+				circles = SCVplayer.analyser.frequencyBinCount / 2 ;
 				maxradius = Math.max( canvas.width, canvas.height) / 2;
 				totfreq = 0;
 				totradius = 0;
@@ -232,7 +232,7 @@
 				for (var i = 0; i < circles; i++) { totfreq += fbc_array[i*2]; }
 				for (var i = 0; i < circles; i++) {
 					ctx.beginPath();
-					delta = maxradius * fbc_array[i*2] / totfreq;
+					delta = maxradius * fbc_array[ (2 * ( circles - i )) - 1 ] / totfreq;
 					ctx.lineWidth = delta;
 					totradius += delta/2;
 					RGB = hsvToRgb( ((((i * 360 / circles) - (currentloop/3)) % 360)+360)%360, 1, 1 );
@@ -258,7 +258,21 @@
 		activeviz();
 	}, false);
 	
-	
+	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
+	function hsvToRgb(h, s, v) {
+		h = h / 60;
+		var i = Math.floor(h),
+			f = h - i,
+			p = v * (1 - s),
+			q = v * (1 - f * s),
+			t = v * (1 - (1 - f) * s),
+			mod = i % 6,
+			r = [v, q, p, p, t, v][mod],
+			g = [t, v, v, q, p, p][mod],
+			b = [p, p, t, v, v, q][mod];
+		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+	}
+
 	/*
 	function SCVthree(){
 		// Setup scene
@@ -339,20 +353,5 @@
 		}, false );
 	};
 	*/
-	
-	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
-	function hsvToRgb(h, s, v) {
-		h = h / 60;
-		var i = Math.floor(h),
-			f = h - i,
-			p = v * (1 - s),
-			q = v * (1 - f * s),
-			t = v * (1 - (1 - f) * s),
-			mod = i % 6,
-			r = [v, q, p, p, t, v][mod],
-			g = [t, v, v, q, p, p][mod],
-			b = [p, p, t, v, v, q][mod];
-		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-	}
-	
+		
 }());
