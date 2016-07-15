@@ -191,27 +191,59 @@
 			
 		};
 		
-		/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
-		function hsvToRgb(h, s, v) {
-			h = h / 60;
-			var i = Math.floor(h),
-				f = h - i,
-				p = v * (1 - s),
-				q = v * (1 - f * s),
-				t = v * (1 - (1 - f) * s),
-				mod = i % 6,
-				r = [v, q, p, p, t, v][mod],
-				g = [t, v, v, q, p, p][mod],
-				b = [p, p, t, v, v, q][mod];
-			return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-		}
-
 	};
+	
+	
+	function SCVcircles(){
+		
+		var canvas, ctx, currentloop, fbc_array, RGB, circles, maxradius, totradius, radius, totfreq, xcenter, ycenter;	
+		canvas = document.getElementById('SCVisualizer');
+		ctx = canvas.getContext('2d');
+		currentloop = 0;
+		loop();
+		
+		function loop(){
+			window.requestAnimationFrame(loop);
+			ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+			RGB = hsvToRgb( currentloop % 360, 1, 1 );
+			ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+			ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas
+
+		
+			// Display frequency data
+			fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
+			SCVplayer.analyser.getByteFrequencyData(fbc_array);
+			circles =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
+			maxradius = Math.max(canvas.width, canvas.height) / 2;
+			totfreq = 0;
+			totradius = 0;
+			xcenter = canvas.width/2;
+			ycenter = canvas.height/2;
+			ctx.lineWidth = maxradius / circles;
+			for (var i = 0; i < circles; i++) { totfreq += fbc_array[i]; }
+			for (var i = 0; i < circles; i++) {
+				radius = maxradius * fbc_array[i] / totfreq;
+				totradius += radius;
+				ctx.beginPath();
+				RGB = hsvToRgb( ((i * 360 / circles) + currentloop) % 360, 1, 1 );
+				ctx.strokeStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+				ctx.arc(xcenter,ycenter,totradius,0,2*Math.PI);
+				ctx.stroke();				
+				
+			}
+			currentloop = (currentloop+1) % 360;
+			
+		};
+		
+	};
+	
+	
 	
 	// Load track and player.
 	window.addEventListener("load", function(){
 		SCVplayer.init();
-		SCVrainbow();
+		var activeplayer = SCVcircles;
+		activeplayer();
 	}, false);
 	
 	
@@ -296,5 +328,19 @@
 	};
 	*/
 	
+	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
+	function hsvToRgb(h, s, v) {
+		h = h / 60;
+		var i = Math.floor(h),
+			f = h - i,
+			p = v * (1 - s),
+			q = v * (1 - f * s),
+			t = v * (1 - (1 - f) * s),
+			mod = i % 6,
+			r = [v, q, p, p, t, v][mod],
+			g = [t, v, v, q, p, p][mod],
+			b = [p, p, t, v, v, q][mod];
+		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+	}
 	
 }());
