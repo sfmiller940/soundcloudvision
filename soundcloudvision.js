@@ -223,16 +223,16 @@
 				// Display frequency data
 				fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
 				SCVplayer.analyser.getByteFrequencyData(fbc_array);
-				circles = SCVplayer.analyser.frequencyBinCount / 2 ;
+				circles = 3 * SCVplayer.analyser.frequencyBinCount / 8 ;
 				maxradius = Math.max( canvas.width, canvas.height) / 2;
 				totfreq = 0;
 				totradius = 0;
 				xcenter = canvas.width/2;
 				ycenter = canvas.height/2;
-				for (var i = 0; i < circles; i++) { totfreq += fbc_array[i*2]; }
+				for (var i = 0; i < circles; i++) { totfreq += fbc_array[2*i]; }
 				for (var i = 0; i < circles; i++) {
 					ctx.beginPath();
-					delta = maxradius * fbc_array[ (2 * ( circles - i )) - 1 ] / totfreq;
+					delta = maxradius * fbc_array[ (2*(circles - i)) - 1 ] / totfreq;
 					ctx.lineWidth = delta;
 					totradius += delta/2;
 					RGB = hsvToRgb( ((((i * 360 / circles) - (currentloop/3)) % 360)+360)%360, 1, 1 );
