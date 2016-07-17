@@ -169,6 +169,14 @@
 		var canvas, ctx, currentloop, fbc_array, bars, bar_x, bar_width, bar_height, RGB;	
 		canvas = document.getElementById('SCVisualizer');
 		ctx = canvas.getContext('2d');
+		
+		bars =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
+
+		canvas.width = bars;
+		canvas.height = 255;
+
+		bar_width = canvas.width / bars;
+			
 		currentloop = 0;
 		loop();
 		
@@ -180,8 +188,6 @@
 				// Display frequency data
 				fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
 				SCVplayer.analyser.getByteFrequencyData(fbc_array);
-				bars =  2 * SCVplayer.analyser.frequencyBinCount / 3 ;
-				bar_width = canvas.width / bars;
 				for (var i = 0; i < bars; i++) {
 					bar_x = i * bar_width ;
 					bar_height = -( canvas.height * fbc_array[i]  /  255  );
@@ -207,28 +213,41 @@
 		var canvas, ctx, currentloop, fbc_array, RGB, circles, maxradius, totradius, delta, totfreq, xcenter, ycenter;	
 		canvas = document.getElementById('SCVisualizer');
 		ctx = canvas.getContext('2d');
+		
+		circles = 3 * SCVplayer.analyser.frequencyBinCount / 8 ;
+		
+		canvas.width = circles; //  Should be 2*circles, but too slow.
+		canvas.height = Math.floor(canvas.width * window.innerHeight / window.innerWidth);
+		maxradius = Math.max( canvas.width, canvas.height) / 2;
+		xcenter = canvas.width/2;
+		ycenter = canvas.height/2;
+		
 		currentloop = 0;
 		loop();
-		console.log( canvas.height + ' ' + canvas.width);
 		
 		function loop(){
 			if(activeviz == SCVcircles){
+				
 				window.requestAnimationFrame(loop);
+
+				// Rescale if needed
+				if(canvas.height != Math.floor(canvas.width * window.innerHeight / window.innerWidth) ){
+					canvas.height = Math.floor(canvas.width * window.innerHeight / window.innerWidth);
+					maxradius = Math.max( canvas.width, canvas.height) / 2;
+					ycenter = canvas.height/2;
+				}
+				
+				// Clear canvas, then fill.
 				ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 				RGB = hsvToRgb( (((currentloop / -3) % 360)+360)%360, 1, 1 );
-				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the bars
+				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the background
 				ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas
-	
-			
+
 				// Display frequency data
 				fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
 				SCVplayer.analyser.getByteFrequencyData(fbc_array);
-				circles = 3 * SCVplayer.analyser.frequencyBinCount / 8 ;
-				maxradius = Math.max( canvas.width, canvas.height) / 2;
 				totfreq = 0;
 				totradius = 0;
-				xcenter = canvas.width/2;
-				ycenter = canvas.height/2;
 				for (var i = 0; i < circles; i++) { totfreq += fbc_array[2*i]; }
 				for (var i = 0; i < circles; i++) {
 					ctx.beginPath();
