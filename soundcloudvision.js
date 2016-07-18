@@ -269,16 +269,7 @@
 		
 	}
 	
-	
-	var activeviz;
-	// Load track and player.
-	window.addEventListener("load", function(){
-		SCVplayer.init();
-		activeviz = SCVcircles;
-		activeviz();
-	}, false);
-	
-	/* Ported from TinyColor: https://github.com/bgrins/TinyColor */
+	// Ported from TinyColor: https://github.com/bgrins/TinyColor
 	function hsvToRgb(h, s, v) {
 		h = h / 60;
 		var i = Math.floor(h),
@@ -292,7 +283,15 @@
 			b = [p, p, t, v, v, q][mod];
 		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 	}
-
+	
+	// Launch player and visualizer.
+	var activeviz;
+	window.addEventListener("load", function(){
+		SCVplayer.init();
+		activeviz = SCVcircles;
+		activeviz();
+	}, false);
+	
 	/*
 	function SCVthree(){
 		
