@@ -33,7 +33,7 @@
 					'<div id="SCVuiWrap"><div id="SCVui">' +
 						'<div id="SCVplaylist"></div>' +
 						'<div id="urlui">' +
-								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') ? unescape(getQueryVariable('playlist')) : 'https://soundcloud.com/booji-3/sets/1nyce" class="rb_light_bg') + '" />' +
+								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') ? unescape(getQueryVariable('playlist')) : 'https://soundcloud.com/ch3tr4sh0/sets/hot-list-11-14" class="rb_light_bg') + '" />' +
 								'<button id="urlbutton" class="rb_light_bg">load</button>'+
 						'</div>' + 
 						'<div id="audioviz">' +
@@ -103,6 +103,7 @@
 							for(var i =0; i< sound.length;i++) { addtrack(sound[i]); }
 						}
 						document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
+						document.getElementById('SCVplaylist').scrollTop = 0;
 					}
 					else{ alert('Sorry, SoundCloud doesn\'t share this.'); }
 				}).catch(function(error){ alert('Sorry, SoundCloud doesn\'t share this: ' + error.message); });
@@ -201,9 +202,9 @@
 				currentloop = (currentloop+1) % 1080;
 			}
 			
-		};
+		}
 		
-	};
+	}
 	
 	
 	function SCVcircles(){
@@ -266,7 +267,7 @@
 			
 		}
 		
-	};
+	}
 	
 	
 	var activeviz;
@@ -294,6 +295,9 @@
 
 	/*
 	function SCVthree(){
+		
+		activeviz = SCVthree;
+		
 		// Setup scene
 		var scene = new THREE.Scene();
 		
@@ -303,11 +307,11 @@
 	
 		var lights = [];
 		lights[0] = new THREE.PointLight( 0xffffff, 1, 0 );
-		lights[1] = new THREE.PointLight( 0xffffff, 1, 0 );
+		//lights[1] = new THREE.PointLight( 0xffffff, 1, 0 );
 		lights[2] = new THREE.PointLight( 0xffffff, 1, 0 );
 	
 		lights[0].position.set( 0, 2000, 0 );
-		lights[1].position.set( 1000, 2000, 1000 );
+		//lights[1].position.set( 1000, 2000, 1000 );
 		lights[2].position.set( -1000, -2000, -1000 );
 	
 		scene.add( lights[0] );
@@ -337,9 +341,9 @@
 		
 		// Add objects to scene
 		var curves = [];
-		for (var i=1; i < 10; i++){
-			var geometry = new THREE.CylinderGeometry( i * 20, i * 20, 20, 32,true );
-			var material = new THREE.MeshBasicMaterial({color:0xcccccc});
+		for (var i=0; i < 1; i++){
+			var geometry = new THREE.SphereGeometry( 100, 32,32 );
+			var material = new THREE.MeshBasicMaterial({color:0xccccff});
 			curves.push( new THREE.Mesh( geometry, material ) );
 			scene.add( curves[ curves.length - 1 ] );
 		}
@@ -348,7 +352,7 @@
 		var count = 0;
 		function loop () {
 			count = (count+1)%600;
-			ambientLight.color.setHSL( count / 600, 1, 0.5 );
+			//ambientLight.color.setHSL( count / 600, 1, 0.5 );
 		
 			for( var i =0; i < curves.length; i++){	
 				curves[i].material.color.setHSL( ( ( i / curves.length) + (count/600) ) % 1,1,0.5);
