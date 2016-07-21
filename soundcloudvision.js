@@ -281,17 +281,16 @@
 		canvas.height = window.innerHeight;
 
 		discs = [];
-		numDiscs = 6;		
+		numDiscs = 7;		
 		function disc(x,y,r,vx,vy){
 			this.x = x;
 			this.y = y;
 			this.r = r;
 			this.vx = vx;
 			this.vy = vy;
-			this.dist = function(other){ return Math.sqrt( Math.pow(this.x - other.x,2) + Math.pow(this.y - other.y,2) ) };
 		}
 		for(var i=0;i<numDiscs;i++){
-			var newradius = (canvas.width / 6 ) - (i * canvas.width / (9 * numDiscs));
+			var newradius = (canvas.width / 6 ) - (i * canvas.width / (8 * numDiscs));
 			var newvel = 2 * Math.PI * Math.random();
 			discs.push( new disc( newradius + ( Math.random() * (canvas.width - (2*newradius))), newradius + ( Math.random() * (canvas.height - (2*newradius))), newradius, Math.cos(newvel) , Math.sin(newvel) ) );
 		}
@@ -304,13 +303,15 @@
 			if(activeviz == SCVdiscs){
 				window.requestAnimationFrame(loop);
 				ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-				RGB = hsvToRgb( ((currentloop/3) + 300) % 360, 1, 1 );
+				RGB = hsvToRgb( ((currentloop/5) + 300) % 360, 1, 1 );
 				ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+',1)'; // Color of the background
 				ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas
 			
 				// Display frequency data
 				fbc_array = new Uint8Array(SCVplayer.analyser.frequencyBinCount);
 				SCVplayer.analyser.getByteFrequencyData(fbc_array);
+				var maxfreq = 0;
+				for(var i=0; i<fbc_array.length;i++){ if( fbc_array[i]>maxfreq) maxfreq = fbc_array[i]; }
 				for (var i = 0; i < discs.length; i++) {
 					while( 
 					((discs[i].x + discs[i].vx + discs[i].r)  > canvas.width) || 
@@ -323,14 +324,14 @@
 						discs[i].vy = Math.sin(newvel);
 					}
 					discs[i].x += discs[i].vx;
-discs[i].y += discs[i].vy;
-					RGB = hsvToRgb( ((currentloop/3) + ( i * 720 / (3 * numDiscs) ) ) % 360, 1,1 );
+					discs[i].y += discs[i].vy;
 					ctx.beginPath();
-					ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+','+(fbc_array[ Math.floor( 0.75 * i * fbc_array.length / 8 ) ]/255)+')'; // Color of the bars
+					RGB = hsvToRgb( ((currentloop/5) + ( i * 720 / (3 * numDiscs) ) ) % 360, 1,1 );
+					ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+','+(fbc_array[ Math.floor( 0.75 * (i+1) * fbc_array.length / 8 ) ]/maxfreq)+')'; // Color of the bars
 					ctx.arc(discs[i].x,discs[i].y,discs[i].r,0,2*Math.PI);
 					ctx.fill();
 				}
-				currentloop = (currentloop+1) % 1080;
+				currentloop = (currentloop+1) % 1800;
 			}
 			
 		}
