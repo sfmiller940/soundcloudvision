@@ -162,6 +162,19 @@
 
 	};
 	
+	// Launch player and visualizer.
+	var activeviz;
+	window.addEventListener("load", function(){
+		SCVplayer.init();
+		activeviz = SCVcircles;
+		activeviz();
+	}, false);
+
+
+	//
+	// VISUALIZATIONS
+	//
+	
 	
 	function SCVwaves(){
 		
@@ -354,15 +367,7 @@
 			b = [p, p, t, v, v, q][mod];
 		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 	}
-	
-	// Launch player and visualizer.
-	var activeviz;
-	window.addEventListener("load", function(){
-		SCVplayer.init();
-		activeviz = SCVcircles;
-		activeviz();
-	}, false);
-	
+		
 	/*
 	function SCVthree(){
 		
