@@ -339,7 +339,7 @@
 					discs[i].x += discs[i].vx;
 					discs[i].y += discs[i].vy;
 					ctx.beginPath();
-					RGB = hsvToRgb( ((currentloop/5) + ( (1 - (2*(i%2))) * 180 * fbc_array[ Math.floor( 0.75 * (i+1) * fbc_array.length / 7 ) ] / maxfreq ) ) % 360, 1,1 );
+					RGB = hsvToRgb( ((((currentloop/5) + ( (1 - (2*(i%2))) * 180 * fbc_array[ Math.floor( 0.75 * (i+1) * fbc_array.length / 7 ) ] / maxfreq ) ) % 360)+360)%360, 1,1 );
 					ctx.fillStyle = 'rgba('+RGB[0]+','+RGB[1]+','+RGB[2]+','+(fbc_array[ Math.floor( 0.75 * (i+1) * fbc_array.length / 8 ) ]/maxfreq)+')'; // Color of the bars
 					ctx.arc(discs[i].x,discs[i].y,discs[i].r,0,2*Math.PI);
 					ctx.fill();
