@@ -33,7 +33,7 @@
 					'<div id="SCVuiWrap"><div id="SCVui">' +
 						'<div id="SCVplaylist"></div>' +
 						'<div id="urlui">' +
-								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') ? unescape(getQueryVariable('playlist')) : 'https://soundcloud.com/ch3tr4sh0/sets/hot-list-11-14" class="rb_light_bg') + '" />' +
+								'<input type="text" id="urlinput"  class="rb_light_bg" value="'+ ( getQueryVariable('playlist') ? unescape(getQueryVariable('playlist')) : 'https://soundcloud.com/ch3tr4sh0/likes" class="rb_light_bg') + '" />' +
 								'<button id="urlbutton" class="rb_light_bg">load</button>'+
 						'</div>' + 
 						'<div id="audioviz">' +
@@ -85,7 +85,7 @@
 		
 		// Resolve URL and update playlist.
 		function loadurl(){
-			SC.resolve(document.getElementById('urlinput').value)
+			SC.resolve(document.getElementById('urlinput').value, { limit: 1000 })
 				.then( function(sound){
 					console.log(sound);
 					if(sound.kind == 'track' || ( sound.kind == 'playlist' && sound.tracks.length > 0) || sound[0].kind=='track'){
@@ -104,6 +104,7 @@
 						}
 						document.getElementById('SCVplaylist').getElementsByTagName('a')[0].className="active";
 						document.getElementById('SCVplaylist').scrollTop = 0;
+						window.history.pushState('', '', '/viz2/soundcloudvision/?playlist='+ document.getElementById('urlinput').value);
 					}
 					else{ alert('Sorry, SoundCloud doesn\'t share this.'); }
 				}).catch(function(error){ alert('Sorry, SoundCloud doesn\'t share this: ' + error.message); });
